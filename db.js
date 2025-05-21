@@ -1,5 +1,5 @@
 // db.js
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const fs = require('fs');
 const path = require('path');
 
@@ -9,28 +9,28 @@ if (!fs.existsSync(dbPath)) {
     fs.mkdirSync(dbPath);
 }
 
-const db = new sqlite3.Database('./db/database.sqlite', (err) => {
-    if (err) {
-        console.error('Error opening database', err);
-    } else {
-        console.log('Connected to SQLite database');
-    }
-});
+const dbFile = path.join(dbPath, 'database.sqlite');
+const db = new Database(dbFile);
 
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS Sessions (
+// Create tables if they don't exist
+db.prepare(`
+    CREATE TABLE IF NOT EXISTS Sessions (
         sessionID TEXT PRIMARY KEY,
         phoneNumber TEXT,
         userInput TEXT
-    )`);
+    )
+`).run();
 
-    db.run(`CREATE TABLE IF NOT EXISTS Transactions (
+db.prepare(`
+    CREATE TABLE IF NOT EXISTS Transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         sessionID TEXT,
         transactionType TEXT,
         amount REAL,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
-});
+    )
+`).run();
+
+console.log('Connected to SQLite database');
 
 module.exports = db;

@@ -51,21 +51,17 @@ module.exports = (req, res) => {
             const amount = parseFloat(inputs[3]);
 
             if (confirmation === "1") {
-                const stmt = db.prepare(
-                    `INSERT INTO Transactions (sessionID, transactionType, amount) VALUES (?, ?, ?)`
-                );
+                try {
+                    const stmt = db.prepare(
+                        `INSERT INTO Transactions (sessionID, transactionType, amount) VALUES (?, ?, ?)`
+                    );
+                    stmt.run(sessionId, `Send to ${recipientPhone}`, amount);
 
-                stmt.run(sessionId, `Send to ${recipientPhone}`, amount, (err) => {
-                    if (err) {
-                        console.error(err);
-                        return res.send("END Transaction failed. Please try again.");
-                    } else {
-                        return res.send(menus.successSend(lang));
-                    }
-                });
-
-                // ❗ Prevent falling through to the next `res.send` after async operation starts
-                return;
+                    return res.send(menus.successSend(lang));
+                } catch (err) {
+                    console.error(err);
+                    return res.send("END Transaction failed. Please try again.");
+                }
             } else {
                 return res.send(menus.cancelSend(lang));
             }
