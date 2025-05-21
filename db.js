@@ -3,16 +3,19 @@ const Database = require('better-sqlite3');
 const fs = require('fs');
 const path = require('path');
 
-// Ensure db folder exists
+// Ensure the "db" folder exists
 const dbPath = path.join(__dirname, 'db');
 if (!fs.existsSync(dbPath)) {
     fs.mkdirSync(dbPath);
 }
 
+// Define the database file path
 const dbFile = path.join(dbPath, 'database.sqlite');
+
+// Initialize the database connection
 const db = new Database(dbFile);
 
-// Create tables if they don't exist
+// Create Sessions table
 db.prepare(`
     CREATE TABLE IF NOT EXISTS Sessions (
         sessionID TEXT PRIMARY KEY,
@@ -21,13 +24,15 @@ db.prepare(`
     )
 `).run();
 
+// Create Transactions table with optional foreign key
 db.prepare(`
     CREATE TABLE IF NOT EXISTS Transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         sessionID TEXT,
         transactionType TEXT,
         amount REAL,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sessionID) REFERENCES Sessions(sessionID)
     )
 `).run();
 
